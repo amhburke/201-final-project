@@ -1,4 +1,7 @@
 #Names: Iliana Chevres and Avery Burke 
+import requests 
+import json
+import sqlite3
 
 def call_apis():
     country_api_key = "https://newsapi.org/v2/top-headlines?country=us&apiKey=API_KEY"
@@ -7,9 +10,9 @@ def call_apis():
     country_api_url = " https://restcountries.com/v3.1/all"
     news_api_url = 'https://newsapi.org/v2/top-headlines'
     
-    response_country = ""
-    response_news = ""
-    pass 
+    response_country = requests.get()
+    response_news = requests.get()
+
 def get_top_headlines():
     pass 
 def get_country_status():
