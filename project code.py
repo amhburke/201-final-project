@@ -1,8 +1,12 @@
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4275a32c0670aa923ac7a01020158f9f0ddddabc
 #Names: Iliana Chevres and Avery Burke 
 import requests 
 import json
 import sqlite3
+<<<<<<< HEAD
 import matplotlib
 
 def call_apis(country):
@@ -11,6 +15,16 @@ def call_apis(country):
 
     #have to use different urls for the country api to access the different stuff?
     country_api_url = f"https://restcountries.com/v3.1/name/{country}"
+=======
+import matplotlib as plt
+
+def call_apis(country):
+    #country_api_key = "https://newsapi.org/v2/top-headlines?country=&apiKey=API_KEY"
+    news_api_key = "552f2cf7b2c444ca872c26be4c389a0d"
+
+    #have to use different urls for the country api to access the different stuff?
+    country_api_url = f"https://restcountries.com/v3.1/name{country}"
+>>>>>>> 4275a32c0670aa923ac7a01020158f9f0ddddabc
     news_api_url = 'https://newsapi.org/v2/top-headlines'
     
     response_country = requests.get(country_api_url)
@@ -29,11 +43,12 @@ def get_headlines(country):
                 headlines.append(article['title'])
     return headlines 
 
+<<<<<<< HEAD
 print(get_headlines("US"))
 
 def get_country_status(country):
     data = call_apis(country)
-    country_data = data[0]   # first element = REST Countries data
+    country_data = data[0]  
 
     if not isinstance(country_data, list) or len(country_data) == 0:
         return {"error": "No country data found"}
@@ -69,10 +84,54 @@ def create_scatter_plot():
     pass 
 def create_boxplot():
     pass 
+=======
+def get_country_status():
+    pass 
+
+def store_headlines(country):
+    headlines = get_headlines(country)
+    conn = sqlite3.connect('countrynews.db')
+    cur = conn.cursor()
+    cur.execute('''
+                CREATE TABLE IF NOT EXISTS headlines (
+                )
+                ''')
+    conn.commit()
+    conn.close()
+    
+    print("Database 'countrynews.db'' and 'headlines' table created.") 
+
+def store_country_data():
+    pass 
+
+def count_headlines_by_month(country, month):
+    
+    pass 
+
+def calculate_relationship_status():
+    pass 
+
+def join_headline_and_country_data():
+    pass 
+
+def create_scatter_plot():
+    pass 
+
+def create_boxplot(data, xvar, yvar):
+    plt.boxplot(data)
+    plt.title(f"Boxplot of {xvar} for {yvar}")
+    plt.ylabel(f"{yvar}")
+    plt.xlabel(f"{xvar}")
+    plt.show()
+>>>>>>> 4275a32c0670aa923ac7a01020158f9f0ddddabc
 
 def main():
     pass
 
 main()
 
+<<<<<<< HEAD
 #test cases 
+=======
+#test cases 
+>>>>>>> 4275a32c0670aa923ac7a01020158f9f0ddddabc
