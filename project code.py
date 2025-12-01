@@ -3,6 +3,7 @@ import requests
 import json
 import sqlite3
 import matplotlib as plt
+import unittest
 
 def call_apis(country):
     #country_api_key = "https://newsapi.org/v2/top-headlines?country=&apiKey=API_KEY"
@@ -73,3 +74,7 @@ def main():
 main()
 
 #test cases 
+class TestCases(unittest.TestCase):
+    #add in test cases for all functions 
+    if __name__ == 'main':
+        unittest.main()
