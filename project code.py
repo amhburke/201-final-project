@@ -3,11 +3,13 @@ import requests
 import json
 import sqlite3
 import matplotlib
+
 def call_apis(country):
-    country_api_key = "https://newsapi.org/v2/top-headlines?country=us&apiKey=API_KEY"
+    country_api_key = "https://newsapi.org/v2/top-headlines?country=&apiKey=API_KEY"
     news_api_key = "552f2cf7b2c444ca872c26be4c389a0d"
-    
-    country_api_url = " https://restcountries.com/v3.1/all"
+
+    #have to use different urls for the country api to access the different stuff?
+    country_api_url = f"https://restcountries.com/v3.1/name{country}"
     news_api_url = 'https://newsapi.org/v2/top-headlines'
     
     response_country = requests.get(country_api_url)
@@ -18,9 +20,15 @@ def call_apis(country):
 def get_headlines(country):
     data = call_apis(country)
     headlines = []
-    for item in data.items():
-        headlines.append(data['title'])
+    for item in data[1:]:
+        if 'articles' in item.keys():
+            articles = item['articles']
+            for article in articles:
+                print(article['title'])
+                headlines.append(article['title'])
     return headlines 
+
+print(get_headlines("US"))
 
 def get_country_status():
     pass 
