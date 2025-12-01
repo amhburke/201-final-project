@@ -2,7 +2,7 @@
 import requests 
 import json
 import sqlite3
-import matplotlib
+import matplotlib as plt
 
 def call_apis(country):
     #country_api_key = "https://newsapi.org/v2/top-headlines?country=&apiKey=API_KEY"
@@ -43,18 +43,29 @@ def store_headlines(country):
     conn.close()
     
     print("Database 'countrynews.db'' and 'headlines' table created.") 
+
 def store_country_data():
     pass 
-def count_headlines_by_month():
+
+def count_headlines_by_month(country, month):
+    
     pass 
+
 def calculate_relationship_status():
     pass 
+
 def join_headline_and_country_data():
     pass 
+
 def create_scatter_plot():
     pass 
-def create_boxplot():
-    pass 
+
+def create_boxplot(data, xvar, yvar):
+    plt.boxplot(data)
+    plt.title(f"Boxplot of {xvar} for {yvar}")
+    plt.ylabel(f"{yvar}")
+    plt.xlabel(f"{xvar}")
+    plt.show()
 
 def main():
     pass
