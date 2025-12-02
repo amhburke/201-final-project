@@ -17,7 +17,7 @@ def call_apis(country):
     news_api_url = 'https://newsapi.org/v2/top-headlines'
     
     response_country = requests.get(country_api_url)
-    response_news = requests.get(news_api_url, params={country : "country", "apiKey": news_api_key})
+    response_news = requests.get(news_api_url, params={"country": country, "apiKey": news_api_key})
     
     #print(response_country.json())
     return response_country.json(), response_news.json()
@@ -76,7 +76,7 @@ def store_headlines(country):
     headlines = get_headlines(country)
     conn = sqlite3.connect('countrynews.db')
     cur = conn.cursor()
-
+    #cur.execute('''  DROP TABLE IF EXISTS headlines''')
     cur.execute('''
                 CREATE TABLE IF NOT EXISTS headlines (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -91,7 +91,7 @@ def store_headlines(country):
         cur.execute("""
                 INSERT INTO headlines (country, title, source, publishedAt, url)
                     VALUES (?,?,?,?,?)
-                    """, (country, h["title"], h["source"].get("name", ""), h["publishedAt"], h["url"]))
+                    """, (country, h["title"], h["source"], h["publishedAt"], h["url"]))
     conn.commit()
     conn.close()
     
