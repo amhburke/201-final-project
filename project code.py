@@ -38,7 +38,9 @@ def store_headlines(country):
     headlines = get_headlines(country)
     conn = sqlite3.connect('countrynews.db')
     cur = conn.cursor()
+    #can remove later 
     cur.execute("DROP TABLE IF EXISTS headlines")
+
     cur.execute('''
                 CREATE TABLE IF NOT EXISTS headlines (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,8 +66,17 @@ def store_country_data():
     pass 
 
 def count_headlines_by_month(country, month):
+    conn = sqlite3.connect("countrynews.db")
+    cur = conn.cursor()
+
+    cur.execute("""
+                SELECT COUNT(*) FROM headlines 
+                WHERE country = ? AND substr(publishedAt, 6, 2) = ?
+                """, (country, month))
     
-    pass 
+    count = cur.fetchone()[0]
+    conn.close()
+    return count 
 
 def calculate_relationship_status():
     pass 
