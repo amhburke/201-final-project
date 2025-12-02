@@ -70,6 +70,8 @@ def get_country_status():
 
 all_data = get_country_status()
 print(json.dumps(all_data, indent=4))
+#print("Number of countries in all_data:", len(all_data))
+#print("First 5 country names:", list(all_data.keys())[:5])
 
 #https://restcountries.com/v3.1/independent?status=true 
 def store_headlines(country):
@@ -102,14 +104,15 @@ store_headlines("US")
 store_headlines("UK")
 store_headlines("South Africa")
 
-def store_country_data(country_data, data_dict):
+def store_country_data(all_data):
     conn = sqlite3.connect("countrynews.db")
     cur = conn.cursor()
 
-    # Create the table if it doesn't already exist
+    cur.execute("DROP TABLE IF EXISTS country_status")
+
     cur.execute("""
-        CREATE TABLE IF NOT EXISTS country_status (
-            country_name TEXT PRIMARY KEY,
+        CREATE TABLE country_status (
+            name TEXT PRIMARY KEY,
             official_name TEXT,
             capital TEXT,
             region TEXT,
@@ -133,7 +136,7 @@ def store_country_data(country_data, data_dict):
 
         cur.execute("""
             INSERT OR REPLACE INTO country_status
-            (country_name, official_name, capital, region, subregion, population,
+            (name, official_name, capital, region, subregion, population,
              independent, status, un_member)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
@@ -149,7 +152,15 @@ def store_country_data(country_data, data_dict):
         ))
 
     conn.commit()
+
+    # check if worked
+    cur.execute("SELECT COUNT(*) FROM country_status;")
+    print("Rows in database:", cur.fetchone()[0])
+
     conn.close()
+
+all_data = get_country_status()      
+store_country_data(all_data) 
 
 def count_headlines_by_month(country, month):
     conn = sqlite3.connect("countrynews.db")
