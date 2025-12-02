@@ -57,7 +57,7 @@ def store_headlines(country):
         cur.execute("""
                 INSERT INTO headlines (country, title, source, publishedAt, url)
                     VALUES (?,?,?,?,?)
-                    """, (country, h["title"], h["source"], h["publishedAt"], h["url"]))
+                    """, (country, h["title"], h["source"].get("name", ""), h["publishedAt"], h["url"]))
     conn.commit()
     conn.close()
     
