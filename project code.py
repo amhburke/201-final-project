@@ -5,19 +5,24 @@ import json
 import sqlite3
 import matplotlib as plt 
 import unittest 
+import sys 
+sys.stdout.reconfigure(encoding = 'utf-8')
 
 def call_apis(country):
     #country_api_key = "https://newsapi.org/v2/top-headlines?country=&apiKey=API_KEY"
     news_api_key = "552f2cf7b2c444ca872c26be4c389a0d"
 
     #have to use different urls for the country api to access the different stuff?
-    country_api_url = f"https://restcountries.com/v3.1/alpha/{country}"
+    country_api_url = f"https://restcountries.com/v3.1/name/{country}"
     news_api_url = 'https://newsapi.org/v2/top-headlines'
     
     response_country = requests.get(country_api_url)
-    response_news = requests.get(news_api_url, params={"country":country, "apiKey": news_api_key})
+    response_news = requests.get(news_api_url, params={country : "country", "apiKey": news_api_key})
     
+    print(response_country.json())
     return response_country.json(), response_news.json()
+
+call_apis("US")
 
 def get_headlines(country):
     country_data, news_data = call_apis(country)
@@ -32,6 +37,7 @@ def get_headlines(country):
                 "url" : article.get("url")})
     return headlines 
 
+<<<<<<< HEAD
 def get_country_status():
     url = "https://restcountries.com/v3.1/all?fields=name,capital,region,subregion,population,independent,status,unMember"
     response = requests.get(url)
@@ -65,13 +71,36 @@ def get_country_status():
 
 all_data = get_country_status()
 print(json.dumps(all_data, indent=4))
+=======
+#https://restcountries.com/v3.1/independent?status=true 
+
+def get_country_status(country):
+    data = call_apis(country)
+    country_data = data[0]  
+
+    if not isinstance(country_data, list) or len(country_data) == 0:
+        return {"error": "No country data found"}
+
+    info = country_data[0]
+
+    status = {
+        "name": info.get("name", {}).get("common"),
+        "official_name": info.get("name", {}).get("official"),
+        "capital": info.get("capital", [None])[0],
+        "region": info.get("region"),
+        "subregion": info.get("subregion"),
+        "population": info.get("population"),
+        "independent": info.get("independent"),
+        "status": info.get("status"),
+        "un_member": info.get("unMember")
+    }
+    return status
+>>>>>>> 2fa1ff7e5c2bc6fe43662ecdd6640d59f92410fb
 
 def store_headlines(country):
     headlines = get_headlines(country)
     conn = sqlite3.connect('countrynews.db')
     cur = conn.cursor()
-    #can remove later 
-    cur.execute("DROP TABLE IF EXISTS headlines")
 
     cur.execute('''
                 CREATE TABLE IF NOT EXISTS headlines (
@@ -93,6 +122,7 @@ def store_headlines(country):
     
     print("Database 'countrynews.db'' and 'headlines' table created.") 
 
+store_headlines("China")
 
 def store_country_data(country_data, data_dict):
     conn = sqlite3.connect("countrynews.db")
