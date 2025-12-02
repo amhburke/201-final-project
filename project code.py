@@ -38,6 +38,7 @@ def store_headlines(country):
     headlines = get_headlines(country)
     conn = sqlite3.connect('countrynews.db')
     cur = conn.cursor()
+    cur.execute("DROP TABLE IF EXISTS headlines")
     cur.execute('''
                 CREATE TABLE IF NOT EXISTS headlines (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -58,7 +59,6 @@ def store_headlines(country):
     
     print("Database 'countrynews.db'' and 'headlines' table created.") 
 
-print(store_headlines("US"))
 
 def store_country_data():
     pass 
