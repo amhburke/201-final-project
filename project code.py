@@ -32,27 +32,39 @@ def get_headlines(country):
                 "url" : article.get("url")})
     return headlines 
 
-def get_country_status(country):
-    data = call_apis(country)
-    country_data = data[0]  
+def get_country_status():
+    url = "https://restcountries.com/v3.1/all?fields=name,capital,region,subregion,population,independent,status,unMember"
+    response = requests.get(url)
 
-    if not isinstance(country_data, list) or len(country_data) == 0:
-        return {"error": "No country data found"}
+    if response.status_code != 200:
+        print("Error:", response.status_code, response.text)
+        return {}
 
-    info = country_data[0]
+    countries = response.json()
+    all_status = {}
 
-    status = {
-        "name": info.get("name", {}).get("common"),
-        "official_name": info.get("name", {}).get("official"),
-        "capital": info.get("capital", [None])[0],
-        "region": info.get("region"),
-        "subregion": info.get("subregion"),
-        "population": info.get("population"),
-        "independent": info.get("independent"),
-        "status": info.get("status"),
-        "un_member": info.get("unMember")
-    }
-    return status
+    for info in countries:
+        name = info.get("name", {}).get("common")
+        if not name:
+            continue
+
+        status = {
+            "official_name": info.get("name", {}).get("official"),
+            "capital": info.get("capital", [None])[0] if info.get("capital") else None,
+            "region": info.get("region"),
+            "subregion": info.get("subregion"),
+            "population": info.get("population"),
+            "independent": info.get("independent"),
+            "status": info.get("status"),
+            "un_member": info.get("unMember")
+        }
+
+        all_status[name] = status
+
+    return all_status
+
+all_data = get_country_status()
+print(json.dumps(all_data, indent=4))
 
 def store_headlines(country):
     headlines = get_headlines(country)
@@ -127,10 +139,6 @@ def store_country_data(country_data, data_dict):
 
     conn.commit()
     conn.close()
-
-data = get_country_status("US")
-store_country_data("US", data)
-
 
 def count_headlines_by_month(country, month):
     conn = sqlite3.connect("countrynews.db")
