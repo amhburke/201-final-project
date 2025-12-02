@@ -37,6 +37,41 @@ def get_headlines(country):
                 "url" : article.get("url")})
     return headlines 
 
+<<<<<<< HEAD
+def get_country_status():
+    url = "https://restcountries.com/v3.1/all?fields=name,capital,region,subregion,population,independent,status,unMember"
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        print("Error:", response.status_code, response.text)
+        return {}
+
+    countries = response.json()
+    all_status = {}
+
+    for info in countries:
+        name = info.get("name", {}).get("common")
+        if not name:
+            continue
+
+        status = {
+            "official_name": info.get("name", {}).get("official"),
+            "capital": info.get("capital", [None])[0] if info.get("capital") else None,
+            "region": info.get("region"),
+            "subregion": info.get("subregion"),
+            "population": info.get("population"),
+            "independent": info.get("independent"),
+            "status": info.get("status"),
+            "un_member": info.get("unMember")
+        }
+
+        all_status[name] = status
+
+    return all_status
+
+all_data = get_country_status()
+print(json.dumps(all_data, indent=4))
+=======
 #https://restcountries.com/v3.1/independent?status=true 
 
 def get_country_status(country):
@@ -60,6 +95,7 @@ def get_country_status(country):
         "un_member": info.get("unMember")
     }
     return status
+>>>>>>> 2fa1ff7e5c2bc6fe43662ecdd6640d59f92410fb
 
 def store_headlines(country):
     headlines = get_headlines(country)
@@ -136,10 +172,6 @@ def store_country_data(country_data, data_dict):
 
     conn.commit()
     conn.close()
-
-data = get_country_status("US")
-store_country_data("US", data)
-
 
 def count_headlines_by_month(country, month):
     conn = sqlite3.connect("countrynews.db")
