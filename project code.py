@@ -10,7 +10,7 @@ def call_apis(country):
     news_api_key = "552f2cf7b2c444ca872c26be4c389a0d"
 
     #have to use different urls for the country api to access the different stuff?
-    country_api_url = f"https://restcountries.com/v3.1/name{country}"
+    country_api_url = f"https://restcountries.com/v3.1/alpha/{country}"
     news_api_url = 'https://newsapi.org/v2/top-headlines'
     
     response_country = requests.get(country_api_url)
@@ -19,14 +19,16 @@ def call_apis(country):
     return response_country.json(), response_news.json()
 
 def get_headlines(country):
-    data = call_apis(country)
+    country_data, news_data = call_apis(country)
     headlines = []
-    for item in data[1:]:
-        if 'articles' in item.keys():
-            articles = item['articles']
-            for article in articles:
-                print(article['title'])
-                headlines.append(article['title'])
+
+    if "articles" in news_data: 
+        for article in news_data["articles"]:
+            headlines.append({
+                "title": article.get("title"), 
+                "source": article.get("source", {}).get("name"),
+                "publishedAt" : article.get("publishedAt"),
+                "url" : article.get("url")})
     return headlines 
 
 def get_country_status():
@@ -38,12 +40,25 @@ def store_headlines(country):
     cur = conn.cursor()
     cur.execute('''
                 CREATE TABLE IF NOT EXISTS headlines (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                country TEXT, 
+                title TEXT, 
+                source TEXT, 
+                publishedAt TEXT, 
+                url TEXT
                 )
                 ''')
+    for h in headlines: 
+        cur.execute("""
+                INSERT INTO headlines (country, title, source, publishedAt, url)
+                    VALUES (?,?,?,?,?)
+                    """, (country, h["title"], h["source"], h["publishedAt"], h["url"]))
     conn.commit()
     conn.close()
     
     print("Database 'countrynews.db'' and 'headlines' table created.") 
+
+print(store_headlines("US"))
 
 def store_country_data():
     pass 
