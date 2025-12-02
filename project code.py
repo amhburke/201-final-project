@@ -1,23 +1,10 @@
-<<<<<<< HEAD
 
-=======
->>>>>>> 4275a32c0670aa923ac7a01020158f9f0ddddabc
 #Names: Iliana Chevres and Avery Burke 
 import requests 
 import json
 import sqlite3
-<<<<<<< HEAD
-import matplotlib
-
-def call_apis(country):
-    country_api_key = "https://newsapi.org/v2/top-headlines?country=&apiKey=API_KEY"
-    news_api_key = "552f2cf7b2c444ca872c26be4c389a0d"
-
-    #have to use different urls for the country api to access the different stuff?
-    country_api_url = f"https://restcountries.com/v3.1/name/{country}"
-=======
-import matplotlib as plt
-import unittest
+import matplotlib as plt 
+import unittest 
 
 def call_apis(country):
     #country_api_key = "https://newsapi.org/v2/top-headlines?country=&apiKey=API_KEY"
@@ -45,9 +32,6 @@ def get_headlines(country):
                 "url" : article.get("url")})
     return headlines 
 
-<<<<<<< HEAD
-print(get_headlines("US"))
-
 def get_country_status(country):
     data = call_apis(country)
     country_data = data[0]  
@@ -71,24 +55,6 @@ def get_country_status(country):
     return status
 
 print(get_country_status("US"))
-
-def store_headlines():
-    pass 
-def store_country_data():
-    pass 
-def count_headlines_by_month():
-    pass 
-def calculate_relationship_status():
-    pass 
-def join_headline_and_country_data():
-    pass 
-def create_scatter_plot():
-    pass 
-def create_boxplot():
-    pass 
-=======
-def get_country_status():
-    pass 
 
 def store_headlines(country):
     headlines = get_headlines(country)
@@ -149,16 +115,13 @@ def create_boxplot(df):
     plt.xlabel("Country's Independence Status")
     plt.ylabel("Number of Headlines")
     plt.show()
->>>>>>> 4275a32c0670aa923ac7a01020158f9f0ddddabc
 
 def main():
     pass
 
 main()
 
-<<<<<<< HEAD
-#test cases 
-=======
+
 #test cases 
 class TestCases(unittest.TestCase):
     #add in test cases for all functions 
