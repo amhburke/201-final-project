@@ -87,11 +87,11 @@ def join_headline_and_country_data():
 def create_scatter_plot():
     pass 
 
-def create_boxplot(data, xvar, yvar):
-    plt.boxplot(data)
-    plt.title(f"Boxplot of {xvar} for {yvar}")
-    plt.ylabel(f"{yvar}")
-    plt.xlabel(f"{xvar}")
+def create_boxplot(df):
+    df.boxplot(column="headline_count", by="independent")
+    plt.title(f"Boxplot of Headlines by Independent Status")
+    plt.xlabel("Country's Independence Status")
+    plt.ylabel("Number of Headlines")
     plt.show()
 
 def main():
