@@ -106,9 +106,10 @@ def store_country_data(country_data, data_dict):
     conn = sqlite3.connect("countrynews.db")
     cur = conn.cursor()
 
+    # Create the table if it doesn't already exist
     cur.execute("""
         CREATE TABLE IF NOT EXISTS country_status (
-            name TEXT PRIMARY KEY,
+            country_name TEXT PRIMARY KEY,
             official_name TEXT,
             capital TEXT,
             region TEXT,
@@ -117,33 +118,35 @@ def store_country_data(country_data, data_dict):
             independent INTEGER,
             status TEXT,
             un_member INTEGER
-        );
+        )
     """)
 
-    independent_val = None
-    if isinstance(data_dict.get("independent"), bool):
-        independent_val = int(data_dict["independent"])
+    for country_name, info in all_data.items():
 
-    un_member_val = None
-    if isinstance(data_dict.get("un_member"), bool):
-        un_member_val = int(data_dict["un_member"])
+        independent_val = None
+        if isinstance(info.get("independent"), bool):
+            independent_val = int(info["independent"])
 
-    cur.execute("""
-        INSERT OR REPLACE INTO country_status
-        (name, official_name, capital, region, subregion, population,
-         independent, status, un_member)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        data_dict.get("name"),
-        data_dict.get("official_name"),
-        data_dict.get("capital"),
-        data_dict.get("region"),
-        data_dict.get("subregion"),
-        data_dict.get("population"),
-        independent_val,
-        data_dict.get("status"),
-        un_member_val
-    ))
+        un_member_val = None
+        if isinstance(info.get("un_member"), bool):
+            un_member_val = int(info["un_member"])
+
+        cur.execute("""
+            INSERT OR REPLACE INTO country_status
+            (country_name, official_name, capital, region, subregion, population,
+             independent, status, un_member)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            country_name,
+            info.get("official_name"),
+            info.get("capital"),
+            info.get("region"),
+            info.get("subregion"),
+            info.get("population"),
+            independent_val,
+            info.get("status"),
+            un_member_val
+        ))
 
     conn.commit()
     conn.close()
