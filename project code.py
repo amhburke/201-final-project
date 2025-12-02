@@ -54,8 +54,6 @@ def get_country_status(country):
     }
     return status
 
-print(get_country_status("US"))
-
 def store_headlines(country):
     headlines = get_headlines(country)
     conn = sqlite3.connect('countrynews.db')
@@ -84,8 +82,55 @@ def store_headlines(country):
     print("Database 'countrynews.db'' and 'headlines' table created.") 
 
 
-def store_country_data():
-    pass 
+def store_country_data(country_data, data_dict):
+    conn = sqlite3.connect("countrynews.db")
+    cur = conn.cursor()
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS country_status (
+            name TEXT PRIMARY KEY,
+            official_name TEXT,
+            capital TEXT,
+            region TEXT,
+            subregion TEXT,
+            population INTEGER,
+            independent INTEGER,
+            status TEXT,
+            un_member INTEGER
+        );
+    """)
+
+    independent_val = None
+    if isinstance(data_dict.get("independent"), bool):
+        independent_val = int(data_dict["independent"])
+
+    un_member_val = None
+    if isinstance(data_dict.get("un_member"), bool):
+        un_member_val = int(data_dict["un_member"])
+
+    cur.execute("""
+        INSERT OR REPLACE INTO country_status
+        (name, official_name, capital, region, subregion, population,
+         independent, status, un_member)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        data_dict.get("name"),
+        data_dict.get("official_name"),
+        data_dict.get("capital"),
+        data_dict.get("region"),
+        data_dict.get("subregion"),
+        data_dict.get("population"),
+        independent_val,
+        data_dict.get("status"),
+        un_member_val
+    ))
+
+    conn.commit()
+    conn.close()
+
+data = get_country_status("US")
+store_country_data("US", data)
+
 
 def count_headlines_by_month(country, month):
     conn = sqlite3.connect("countrynews.db")
