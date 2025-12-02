@@ -38,29 +38,6 @@ def get_headlines(country):
     return headlines 
 
 #https://restcountries.com/v3.1/independent?status=true 
-
-def get_country_status(country):
-    data = call_apis(country)
-    country_data = data[0]  
-
-    if not isinstance(country_data, list) or len(country_data) == 0:
-        return {"error": "No country data found"}
-
-    info = country_data[0]
-
-    status = {
-        "name": info.get("name", {}).get("common"),
-        "official_name": info.get("name", {}).get("official"),
-        "capital": info.get("capital", [None])[0],
-        "region": info.get("region"),
-        "subregion": info.get("subregion"),
-        "population": info.get("population"),
-        "independent": info.get("independent"),
-        "status": info.get("status"),
-        "un_member": info.get("unMember")
-    }
-    return status
-
 def store_headlines(country):
     headlines = get_headlines(country)
     conn = sqlite3.connect('countrynews.db')
