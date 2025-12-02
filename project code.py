@@ -19,7 +19,7 @@ def call_apis(country):
     response_country = requests.get(country_api_url)
     response_news = requests.get(news_api_url, params={country : "country", "apiKey": news_api_key})
     
-    print(response_country.json())
+    #print(response_country.json())
     return response_country.json(), response_news.json()
 
 call_apis("US")
@@ -84,9 +84,12 @@ def store_headlines(country):
     conn.commit()
     conn.close()
     
-    print("Database 'countrynews.db'' and 'headlines' table created.") 
+    print(f"{country} headlines added to 'headlines' table and 'countrynews.db' created.") 
 
 store_headlines("China")
+store_headlines("US")
+store_headlines("UK")
+store_headlines("South Africa")
 
 def store_country_data(country_data, data_dict):
     conn = sqlite3.connect("countrynews.db")
