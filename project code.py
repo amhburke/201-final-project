@@ -37,6 +37,40 @@ def get_headlines(country):
                 "url" : article.get("url")})
     return headlines 
 
+def get_country_status():
+    url = "https://restcountries.com/v3.1/all?fields=name,capital,region,subregion,population,independent,status,unMember"
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        print("Error:", response.status_code, response.text)
+        return {}
+
+    countries = response.json()
+    all_status = {}
+
+    for info in countries:
+        name = info.get("name", {}).get("common")
+        if not name:
+            continue
+
+        status = {
+            "official_name": info.get("name", {}).get("official"),
+            "capital": info.get("capital", [None])[0] if info.get("capital") else None,
+            "region": info.get("region"),
+            "subregion": info.get("subregion"),
+            "population": info.get("population"),
+            "independent": info.get("independent"),
+            "status": info.get("status"),
+            "un_member": info.get("unMember")
+        }
+
+        all_status[name] = status
+
+    return all_status
+
+all_data = get_country_status()
+print(json.dumps(all_data, indent=4))
+
 #https://restcountries.com/v3.1/independent?status=true 
 def store_headlines(country):
     headlines = get_headlines(country)
