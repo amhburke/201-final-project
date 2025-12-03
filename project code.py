@@ -13,7 +13,7 @@ sys.stdout.reconfigure(encoding = 'utf-8')
 def call_apis(country):
     news_api_key = "65bc8405516b8eeece5b4e5741ab6851"
 
-    country_api_url = f"https://restcountries.com/v3.1/alpha/{country}"
+    country_api_url = f"https://restcountries.com/v3.1/name/{country}"
     news_api_url = f'https://gnews.io/api/v4/top-headlines?country={country.lower()}&apikey={news_api_key}'
     
     response_country = requests.get(country_api_url, params = {"country": country})
@@ -41,7 +41,7 @@ def get_headlines(country_code):
     return headlines 
 
 def get_country_status():
-    url = "https://restcountries.com/v3.1/all?fields=name,capital,region,subregion,population,independent,status,unMember"
+    url = "https://restcountries.com/v3.1/all?fields=cca2,name,capital,region,subregion,population,independent,status,unMember"
     response = requests.get(url)
 
     if response.status_code != 200:
@@ -52,9 +52,10 @@ def get_country_status():
     all_status = {}
 
     for info in countries:
-        name = info.get("name", {}).get("common")
-        if not name:
-            continue
+        code = info.get("cca2")
+        #name = info.get("name", {}).get("common")
+        #if not name:
+           # continue
 
         status = {
             "official_name": info.get("name", {}).get("official"),
@@ -67,7 +68,7 @@ def get_country_status():
             "un_member": info.get("unMember")
         }
 
-        all_status[name] = status
+        all_status[code.upper()] = status
 
     return all_status
 
@@ -80,6 +81,8 @@ print(json.dumps(all_data, indent=4))
 
 def store_headlines(country_code):
     country_data, _ = call_apis(country_code)
+
+    country_name = country_code 
 
     if isinstance(country_data, list) and len(country_data) > 0:
         first = country_data[0]
@@ -110,10 +113,18 @@ def store_headlines(country_code):
                 INSERT INTO headlines (country, title, source, publishedAt, url)
                     VALUES (?,?,?,?,?)
                     """, (h["country"], h["title"], h["source"], h["publishedAt"], h["url"]))
+        headlines_dict = {
+            "official_name": h["country"],
+            "article title": h["title"],
+            "source": h["source"],
+            "published at": h["publishedAt"],
+            "url": h["url"]
+        }
+
     conn.commit()
     conn.close()
-    
-    print(f"{country_code} headlines added to 'headlines' table.") 
+
+    print(f"{headlines_dict} for {country_code}")
 
 #putting country data in the database 
 store_headlines("fr")
@@ -124,12 +135,14 @@ store_headlines("fr")
 
 
 def store_country_data(all_data):
+
     conn = sqlite3.connect("countrynews.db")
     cur = conn.cursor()
+    #cur.execute("""DROP TABLE IF EXISTS country_status""")
 
     cur.execute("""
         CREATE TABLE IF NOT EXISTS country_status (
-            name TEXT PRIMARY KEY,
+            country_code TEXT PRIMARY KEY,
             official_name TEXT,
             capital TEXT,
             region TEXT,
@@ -142,7 +155,7 @@ def store_country_data(all_data):
     """)
 
     existing = set()
-    cur.execute("SELECT name FROM country_status")
+    cur.execute("SELECT country_code FROM country_status")
     rows = cur.fetchall()
     for row in rows:
         existing.add(row[0])
@@ -150,9 +163,11 @@ def store_country_data(all_data):
     rows_added = 0
     limit = 25
 
-    for country_name, info in all_data.items():
-        if country_name in existing:
-            continue
+    for code, info in all_data.items():
+        code = code.upper()
+
+        if code in existing: 
+            continue 
 
         if rows_added >= limit:
             break
@@ -167,11 +182,11 @@ def store_country_data(all_data):
 
         cur.execute("""
             INSERT OR REPLACE INTO country_status
-            (name, official_name, capital, region, subregion, population,
+            (country_code, official_name, capital, region, subregion, population,
              independent, status, un_member)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
-            country_name,
+            code,
             info.get("official_name"),
             info.get("capital"),
             info.get("region"),
@@ -214,7 +229,7 @@ def average_headlines_independent():
     conn = sqlite3.connect("countrynews.db")
     cur = conn.cursor()
 
-    cur.execute("SELECT name FROM country_status WHERE independent = 1")
+    cur.execute("SELECT country_code FROM country_status WHERE independent = 1")
     rows = cur.fetchall()
 
     independent_countries = []
@@ -268,7 +283,7 @@ def join_headline_and_country_data():
             SELECT h.country, c.independent, COUNT(h.id) AS headline_count
                            FROM headlines h 
                            JOIN country_status c 
-                           ON h.country = c.name 
+                           ON UPPER(h.country) = UPPER(c.country_code)
                            GROUP BY h.country
                            """, conn)
     
