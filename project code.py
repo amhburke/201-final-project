@@ -9,15 +9,14 @@ import sys
 sys.stdout.reconfigure(encoding = 'utf-8')
 
 def call_apis(country):
-    #country_api_key = "https://newsapi.org/v2/top-headlines?country=&apiKey=API_KEY"
-    news_api_key = "552f2cf7b2c444ca872c26be4c389a0d"
+    news_api_key = "65bc8405516b8eeece5b4e5741ab6851"
 
     #have to use different urls for the country api to access the different stuff?
     country_api_url = f"https://restcountries.com/v3.1/name/{country}"
-    news_api_url = 'https://newsapi.org/v2/top-headlines'
+    news_api_url = f'https://gnews.io/api/v4/top-headlines?country = {country}&apikey={news_api_key}'
     
-    response_country = requests.get(country_api_url)
-    response_news = requests.get(news_api_url, params={"country": country, "apiKey": news_api_key})
+    response_country = requests.get(country_api_url, params = {"country": country})
+    response_news = requests.get(news_api_url, params={"country": country.lower(), "apiKey": news_api_key})
     
     #print(response_country.json())
     return response_country.json(), response_news.json()
@@ -76,6 +75,7 @@ print(json.dumps(all_data, indent=4))
 #https://restcountries.com/v3.1/independent?status=true 
 def store_headlines(country):
     headlines = get_headlines(country)
+    print(country, len(headlines))
     conn = sqlite3.connect('countrynews.db')
     cur = conn.cursor()
     #cur.execute('''  DROP TABLE IF EXISTS headlines''')
@@ -99,10 +99,12 @@ def store_headlines(country):
     
     print(f"{country} headlines added to 'headlines' table and 'countrynews.db' created.") 
 
-store_headlines("China")
+#putting country data in the database 
+store_headlines("fr")
 store_headlines("US")
-store_headlines("UK")
-store_headlines("South Africa")
+store_headlines("ra")
+store_headlines("mx")
+
 
 def store_country_data(all_data):
     conn = sqlite3.connect("countrynews.db")
