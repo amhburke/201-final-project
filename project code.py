@@ -226,7 +226,14 @@ def create_boxplot(df):
     plt.show()
 
 def main():
-    pass
+    print("\n -- STORING DATA -- ")
+
+    print("\n -- ANALYSIS -- ")
+    df = join_headline_and_country_data()
+    print(df)
+
+    print("\n -- GRAPHS --")
+    create_boxplot(df)
 
 main()
 
