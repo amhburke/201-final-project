@@ -250,9 +250,6 @@ def count_headlines_by_month(country, month):
     conn.close()
     return count 
 
-def headlines_per_reigon(): 
-    pass
-
 def join_headline_and_country_data():
 
     conn = sqlite3.connect("countrynews.db")
@@ -273,6 +270,36 @@ def join_headline_and_country_data():
     conn.commit()
     conn.close()
     return df 
+
+def headlines_per_reigon(): 
+    conn = sqlite3.connect("countrynews.db")
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT c.region, COUNT(h.id) AS total_headlines
+        FROM headlines h
+        JOIN country_status c
+            ON h.country = c.name
+        GROUP BY c.region
+    """)
+
+    rows = cur.fetchall()
+    conn.close()
+
+    region_counts = {}
+
+    for row in rows:
+        region = row[0]
+        count = row[1]
+
+        if region is not None:
+            region_counts[region] = count
+
+    print("Headlines per region:")
+    for region in region_counts:
+        print(region + ":", region_counts[region])
+
+    return region_counts
 
 def create_scatter_plot(df):
     #pick something else besides independent 
