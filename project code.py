@@ -13,7 +13,7 @@ sys.stdout.reconfigure(encoding = 'utf-8')
 def call_apis(country):
     news_api_key = "65bc8405516b8eeece5b4e5741ab6851"
 
-    country_api_url = f"https://restcountries.com/v3.1/name/{country}"
+    country_api_url = f"https://restcountries.com/v3.1/alpha/{country}"
     news_api_url = f'https://gnews.io/api/v4/top-headlines?country={country.lower()}&apikey={news_api_key}'
     
     response_country = requests.get(country_api_url, params = {"country": country})
@@ -24,13 +24,15 @@ def call_apis(country):
 
 call_apis("US")
 
-def get_headlines(country):
-    country_data, news_data = call_apis(country)
+def get_headlines(country_code):
+    country_data, news_data = call_apis(country_code)
+
     headlines = []
 
     if "articles" in news_data: 
         for article in news_data["articles"]:
             headlines.append({
+                "country" : country_code,
                 "title": article.get("title"), 
                 "source": article.get("source", {}).get("name"),
                 "publishedAt" : article.get("publishedAt"),
@@ -79,8 +81,6 @@ print(json.dumps(all_data, indent=4))
 def store_headlines(country_code):
     country_data, _ = call_apis(country_code)
 
-    country_name = country_code
-
     if isinstance(country_data, list) and len(country_data) > 0:
         first = country_data[0]
         name_info = first.get("name", {})
@@ -104,19 +104,20 @@ def store_headlines(country_code):
                 url TEXT
                 )
                 ''')
+    
     for h in headlines: 
         cur.execute("""
                 INSERT INTO headlines (country, title, source, publishedAt, url)
                     VALUES (?,?,?,?,?)
-                    """, (country_name, h["title"], h["source"], h["publishedAt"], h["url"]))
+                    """, (h["country"], h["title"], h["source"], h["publishedAt"], h["url"]))
     conn.commit()
     conn.close()
     
-    print(f"{country_name} headlines added to 'headlines' table.") 
+    print(f"{country_code} headlines added to 'headlines' table.") 
 
 #putting country data in the database 
 store_headlines("fr")
-store_headlines("US")
+store_headlines("us")
 store_headlines("ra")
 store_headlines("mx")
 
@@ -255,16 +256,14 @@ def average_headlines_independent():
 average_headlines_independent()
 
 def join_headline_and_country_data():
-    #make it 
     country_codes = {"us": "United States",
                      "fr": "France", 
                      "mx" : "Mexico",
                      "ca" : "Canada"}
-    
+
     conn = sqlite3.connect("countrynews.db")
     
-    for item in country_codes:
-        df = pd.read_sql_query("""
+    df = pd.read_sql_query("""
             SELECT h.country, c.independent, COUNT(h.id) AS headline_count
                            FROM headlines h 
                            JOIN country_status c 
@@ -303,3 +302,4 @@ class TestCases(unittest.TestCase):
     #add in test cases for all functions 
     if __name__ == 'main':
         unittest.main()
+
