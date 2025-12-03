@@ -3,15 +3,15 @@ import requests
 import json
 import sqlite3
 import pandas as pd 
-import matplotlib as plt 
+import matplotlib.pyplot as plt 
 import unittest 
 import sys 
 
 sys.stdout.reconfigure(encoding = 'utf-8')
 
 def call_apis(country):
-    # iliana news_api_key = "65bc8405516b8eeece5b4e5741ab6851"
-    news_api_key = "3d234e0bcad1631cbd31fac995d6ac72"
+    news_api_key = "65bc8405516b8eeece5b4e5741ab6851"
+    #news_api_key = "3d234e0bcad1631cbd31fac995d6ac72"
 
     country_api_url = f"https://restcountries.com/v3.1/alpha/{country}"
     news_api_url = f'https://gnews.io/api/v4/top-headlines?country={country.lower()}&apikey={news_api_key}'
@@ -301,8 +301,8 @@ def join_headline_and_country_data():
     conn.close()
     return df 
 
-def create_scatter_plot():
-    pass 
+def create_scatter_plot(df):
+    df.scatterplot(column="", by="")
 
 def create_boxplot(df):
     df.boxplot(column="headline_count", by="independent")
@@ -320,6 +320,7 @@ def main():
 
     print("\n -- GRAPHS --")
     create_boxplot(df)
+    create_scatter_plot(df)
 
 main()
 
