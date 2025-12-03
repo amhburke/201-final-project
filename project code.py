@@ -254,21 +254,23 @@ def headlines_per_reigon():
     pass
 
 def join_headline_and_country_data():
-    country_codes = {"us": "United States",
-                     "fr": "France", 
-                     "mx" : "Mexico",
-                     "ca" : "Canada"}
 
     conn = sqlite3.connect("countrynews.db")
     
     df = pd.read_sql_query("""
-            SELECT h.country, c.independent, COUNT(h.id) AS headline_count
+            SELECT h.country, c.independent, c.region, COUNT(h.id) AS headline_count
                            FROM headlines h 
                            JOIN country_status c 
                            ON h.country = c.name 
-                           GROUP BY h.country
+                           GROUP BY h.country, c.independent, c.region
                            """, conn)
     
+    conn.execute("""DROP TABLE IF EXISTS joined_data""")
+    
+    #saving data frame as a sql table 
+    df.to_sql("joined_data", conn, index=False)
+    
+    conn.commit()
     conn.close()
     return df 
 
