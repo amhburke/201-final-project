@@ -108,8 +108,6 @@ def store_country_data(all_data):
     conn = sqlite3.connect("countrynews.db")
     cur = conn.cursor()
 
-    cur.execute("DROP TABLE IF EXISTS country_status")
-
     cur.execute("""
         CREATE TABLE country_status (
             name TEXT PRIMARY KEY,
@@ -124,7 +122,21 @@ def store_country_data(all_data):
         )
     """)
 
+    existing = set()
+    cur.execute("SELECT name FROM country_status")
+    rows = cur.fetchall()
+    for row in rows:
+        existing.add(row[0])
+
+    rows_added = 0
+    limit = 25
+
     for country_name, info in all_data.items():
+        if country_name in existing:
+            continue
+
+        if rows_added >= limit:
+            break
 
         independent_val = None
         if isinstance(info.get("independent"), bool):
@@ -151,11 +163,15 @@ def store_country_data(all_data):
             un_member_val
         ))
 
+        rows_added += 1
+
     conn.commit()
 
     # check if worked
-    cur.execute("SELECT COUNT(*) FROM country_status;")
-    print("Rows in database:", cur.fetchone()[0])
+    cur.execute("SELECT COUNT(*) FROM country_status")
+    total_rows = cur.fetchone()[0]
+    print("\nAdded", rows_added, "new rows.")
+    print("Database now contains", total_rows, "rows total.")
 
     conn.close()
 
