@@ -10,12 +10,8 @@ import sys
 sys.stdout.reconfigure(encoding = 'utf-8')
 
 def call_apis(country):
-<<<<<<< HEAD
     #news_api_key = "65bc8405516b8eeece5b4e5741ab6851"
-=======
-    news_api_key = "65bc8405516b8eeece5b4e5741ab6851"
->>>>>>> 68e05241e0c069b9039cbb02e3f0408cc07721da
-    #news_api_key = "3d234e0bcad1631cbd31fac995d6ac72"
+    news_api_key = "05bf2fe9d109116a0c3c2acba93a6f39"
 
     country_api_url = f"https://restcountries.com/v3.1/alpha/{country}"
     news_api_url = f'https://gnews.io/api/v4/top-headlines?country={country.lower()}&apikey={news_api_key}'
@@ -104,12 +100,19 @@ def store_headlines():
         )
     ''')
 
+    existing_countries = set()
+    cur.execute("SELECT DISTINCT country FROM headlines")
+    rows = cur.fetchall()
+    for row in rows:
+        existing_countries.add(row[0])
+
     limit = 10
     count_countries = 0
 
     for info in countries:
         if count_countries >= limit:
             break
+
         name_info = info.get("name", {})
         common_name = name_info.get("common")    
         code = info.get("cca2")
@@ -120,10 +123,16 @@ def store_headlines():
         country_name = common_name
         country_code = code.upper()
 
+        if country_name in existing_countries:
+            continue
+
         print("Getting headlines for", country_name, "with code", country_code)
 
         headlines = get_headlines(country_code)
 
+        if not headlines:
+            print("No headlines found for", country_name)
+            continue
 
         for h in headlines: 
             cur.execute("""
@@ -136,6 +145,7 @@ def store_headlines():
                 h["publishedAt"],
                 h["url"]
             ))
+        existing_countries.add(country_name)
         count_countries += 1
 
     conn.commit()
@@ -241,50 +251,7 @@ def count_headlines_by_month(country, month):
     return count 
 
 def average_headlines_independent():
-    conn = sqlite3.connect("countrynews.db")
-    cur = conn.cursor()
-
-    cur.execute("SELECT name FROM country_status WHERE independent = 1")
-    rows = cur.fetchall()
-
-    independent_countries = []
-    for row in rows:
-        independent_countries.append(row[0])
-
-    if len(independent_countries) == 0:
-        conn.close()
-        print("No independent countries found in database.")
-        return 0.0
-
-    total_headlines = 0
-    num_countries = 0
-
-    for country_name in independent_countries:
-
-        simple_code = country_name.lower()[:2]     
-        simple_code_upper = simple_code.upper()
-
-        cur.execute("""
-            SELECT COUNT(*) FROM headlines
-            WHERE country = ? OR country = ? OR country = ?
-        """, (country_name, simple_code, simple_code_upper))
-
-        count = cur.fetchone()[0]
-
-        total_headlines += count
-        num_countries += 1
-
-    if num_countries == 0:
-        average = 0.0
-    else:
-        average = total_headlines / float(num_countries)
-
-    conn.close()
-    
-    print("Average headlines per independent country:", average)
-    return average
-
-average_headlines_independent()
+    pass
 
 def join_headline_and_country_data():
     country_codes = {"us": "United States",
