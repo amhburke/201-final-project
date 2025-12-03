@@ -76,6 +76,7 @@ print(json.dumps(all_data, indent=4))
 
 #https://restcountries.com/v3.1/independent?status=true 
 
+#shows up if its the same
 def store_headlines():
     resp = requests.get("https://restcountries.com/v3.1/all?fields=name,cca2")
     if resp.status_code != 200:
