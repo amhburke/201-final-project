@@ -76,9 +76,19 @@ print(json.dumps(all_data, indent=4))
 
 #https://restcountries.com/v3.1/independent?status=true 
 
-def store_headlines(country):
+def store_headlines(country_code):
+    country_data, _ = call_apis(country_code)
 
-    headlines = get_headlines(country)
+    country_name = country_code
+
+    if isinstance(country_data, list) and len(country_data) > 0:
+        first = country_data[0]
+        name_info = first.get("name", {})
+        common_name = name_info.get("common")
+        if common_name:
+            country_name = common_name
+
+    headlines = get_headlines(country_code)
     #print(country, len(headlines))
     conn = sqlite3.connect('countrynews.db')
     cur = conn.cursor()
@@ -98,11 +108,11 @@ def store_headlines(country):
         cur.execute("""
                 INSERT INTO headlines (country, title, source, publishedAt, url)
                     VALUES (?,?,?,?,?)
-                    """, (country, h["title"], h["source"], h["publishedAt"], h["url"]))
+                    """, (country_name, h["title"], h["source"], h["publishedAt"], h["url"]))
     conn.commit()
     conn.close()
     
-    print(f"{country} headlines added to 'headlines' table.") 
+    print(f"{country_name} headlines added to 'headlines' table.") 
 
 #putting country data in the database 
 store_headlines("fr")
@@ -198,8 +208,51 @@ def count_headlines_by_month(country, month):
     conn.close()
     return count 
 
-def calculate_relationship_status():
-    pass 
+def average_headlines_independent():
+    conn = sqlite3.connect("countrynews.db")
+    cur = conn.cursor()
+
+    cur.execute("SELECT name FROM country_status WHERE independent = 1")
+    rows = cur.fetchall()
+
+    independent_countries = []
+    for row in rows:
+        independent_countries.append(row[0])
+
+    if len(independent_countries) == 0:
+        conn.close()
+        print("No independent countries found in database.")
+        return 0.0
+
+    total_headlines = 0
+    num_countries = 0
+
+    for country_name in independent_countries:
+
+        simple_code = country_name.lower()[:2]     
+        simple_code_upper = simple_code.upper()
+
+        cur.execute("""
+            SELECT COUNT(*) FROM headlines
+            WHERE country = ? OR country = ? OR country = ?
+        """, (country_name, simple_code, simple_code_upper))
+
+        count = cur.fetchone()[0]
+
+        total_headlines += count
+        num_countries += 1
+
+    if num_countries == 0:
+        average = 0.0
+    else:
+        average = total_headlines / float(num_countries)
+
+    conn.close()
+    
+    print("Average headlines per independent country:", average)
+    return average
+
+average_headlines_independent()
 
 def join_headline_and_country_data():
     #make it 
