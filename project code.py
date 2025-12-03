@@ -10,12 +10,8 @@ import sys
 sys.stdout.reconfigure(encoding = 'utf-8')
 
 def call_apis(country):
-<<<<<<< HEAD
-    #news_api_key = "65bc8405516b8eeece5b4e5741ab6851"
-=======
-    news_api_key = "65bc8405516b8eeece5b4e5741ab6851"
->>>>>>> 68e05241e0c069b9039cbb02e3f0408cc07721da
-    #news_api_key = "3d234e0bcad1631cbd31fac995d6ac72"
+    news_api_key = "65bc8405516b8eeece5b4e5741ab6851" #iliana
+    #avery news_api_key = "3d234e0bcad1631cbd31fac995d6ac72"
 
     country_api_url = f"https://restcountries.com/v3.1/alpha/{country}"
     news_api_url = f'https://gnews.io/api/v4/top-headlines?country={country.lower()}&apikey={news_api_key}'
