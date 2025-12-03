@@ -250,7 +250,7 @@ def count_headlines_by_month(country, month):
     conn.close()
     return count 
 
-def average_headlines_independent():
+def headlines_per_reigon():
     pass
 
 def join_headline_and_country_data():
