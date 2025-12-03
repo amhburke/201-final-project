@@ -193,7 +193,7 @@ def count_headlines_by_month(country, month):
     conn.close()
     return count 
 
-def calculate_relationship_status():
+def average_headlines_independent():
     pass 
 
 def join_headline_and_country_data():
