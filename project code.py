@@ -78,7 +78,7 @@ print(json.dumps(all_data, indent=4))
 
 #https://restcountries.com/v3.1/independent?status=true 
 
-def store_headlines(country_code):
+def store_headlines():
     country_name = country_code
     country_data, _ = call_apis(country_code)
 
