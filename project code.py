@@ -116,7 +116,7 @@ def store_country_data(all_data):
     cur = conn.cursor()
 
     cur.execute("""
-        CREATE TABLE country_status (
+        CREATE TABLE IF NOT EXISTS country_status (
             name TEXT PRIMARY KEY,
             official_name TEXT,
             capital TEXT,
