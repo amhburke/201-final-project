@@ -4,7 +4,6 @@ import json
 import sqlite3
 import pandas as pd 
 import matplotlib.pyplot as plt 
-import unittest 
 import sys 
 
 sys.stdout.reconfigure(encoding = 'utf-8')
@@ -21,8 +20,6 @@ def call_apis(country):
     
     #print(response_country.json())
     return response_country.json(), response_news.json()
-
-call_apis("US")
 
 def get_headlines(country_code):
     country_data, news_data = call_apis(country_code)
