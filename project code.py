@@ -10,8 +10,8 @@ import sys
 sys.stdout.reconfigure(encoding = 'utf-8')
 
 def call_apis(country):
-    #news_api_key = "65bc8405516b8eeece5b4e5741ab6851" #iliana
-    news_api_key = "7517734784ad018bd28a66356dce3aca" #avery
+    news_api_key = "e6dd185291d51a4ef822e45c5b359069" #iliana
+   # news_api_key = "7517734784ad018bd28a66356dce3aca" #avery
 
     country_api_url = f"https://restcountries.com/v3.1/alpha/{country}"
     news_api_url = f'https://gnews.io/api/v4/top-headlines?country={country.lower()}&apikey={news_api_key}'
@@ -81,69 +81,93 @@ def store_headlines():
     if resp.status_code != 200:
         print("Error fetching country codes:", resp.status_code)
         return
-    
+
     countries = resp.json()
     
     conn = sqlite3.connect('countrynews.db')
     cur = conn.cursor()
 
+    cur.execute("""
+    DROP TABLE IF EXISTS headlines""")
+    cur.execute("""DROP TABLE IF EXISTS countries
+                """)
+    
+    cur.execute("""
+            CREATE TABLE IF NOT EXISTS countries (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                country_code TEXT UNIQUE, 
+                country_name TEXT)
+                """)
+    
     cur.execute('''
         CREATE TABLE IF NOT EXISTS headlines (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            country TEXT,
+            country_id INTEGER,
+            country_name TEXT,
             title TEXT,
             source TEXT,
             publishedAt TEXT,
-            url TEXT UNIQUE
+            url TEXT UNIQUE,
+            FOREIGN KEY(country_id) REFERENCES countries(id)
         )
     ''')
 
-    existing_countries = set()
-    cur.execute("SELECT DISTINCT country FROM headlines")
-    rows = cur.fetchall()
-    for row in rows:
-        existing_countries.add(row[0])
-
-    limit = 25
+    limit = 25 
     count_countries = 0
 
-    for info in countries:
-        if count_countries >= limit:
-            break
+    for info in countries: 
+        if count_countries >= limit: 
+            break 
+    
+        common_name = info["name"]["common"]
+        country_code = info["cca2"].upper()
 
-        name_info = info.get("name", {})
-        common_name = name_info.get("common")    
-        code = info.get("cca2")
+        cur.execute("""
+            INSERT OR IGNORE INTO countries (country_code, country_name)
+                VALUES (?,?)
+                """, (country_code, common_name))
+    
+        cur.execute("SELECT id FROM countries WHERE country_code = ?", (country_code, ))
+        country_id = cur.fetchone()[0]
 
-        if not common_name or not code:
-            continue
 
-        country_name = common_name
-        country_code = code.upper()
+    #existing_countries = set()
+    #cur.execute("SELECT DISTINCT country_id FROM headlines")
+    #rows = cur.fetchall()
+    #for row in rows:
+    #    existing_countries.add(row[0])
 
-        if country_name in existing_countries:
-            continue
+        #name_info = info.get("name", {})
+       # common_name = name_info.get("common")    
+       # code = info.get("cca2")
 
-        print("Getting headlines for", country_name, "with code", country_code)
+       # if not common_name or not code:
+       #     continue
+
+       # if code in existing_countries:
+       #     continue
+
+        print("Getting headlines for", common_name, "with code", country_code)
 
         headlines = get_headlines(country_code)
 
         if not headlines:
-            print("No headlines found for", country_name)
+            print("No headlines found for", common_name)
             continue
 
         for h in headlines: 
             cur.execute("""
-                INSERT OR IGNORE INTO headlines (country, title, source, publishedAt, url)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT OR IGNORE INTO headlines (country_id, country_name, title, source, publishedAt, url)
+                VALUES (?, ?, ?, ?, ?, ?)
             """, (
-                country_name,
+                country_id,
+                common_name,
                 h["title"],
                 h["source"],
                 h["publishedAt"],
                 h["url"]
             ))
-        existing_countries.add(country_name)
+        #existing_countries.add(common_name)
         count_countries += 1
 
     conn.commit()
@@ -256,8 +280,8 @@ def join_headline_and_country_data():
             SELECT h.country, c.independent, c.region, COUNT(h.id) AS headline_count
                            FROM headlines h 
                            JOIN country_status c 
-                           ON h.country = c.name 
-                           GROUP BY h.country, c.independent, c.region
+                           ON h.country_id = c.name 
+                           GROUP BY h.country_id, c.independent, c.region
                            """, conn)
     
     conn.execute("""DROP TABLE IF EXISTS joined_data""")
