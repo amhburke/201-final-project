@@ -120,6 +120,7 @@ store_headlines("fr")
 store_headlines("us")
 store_headlines("ra")
 store_headlines("mx")
+store_headlines("fr")
 
 
 def store_country_data(all_data):
