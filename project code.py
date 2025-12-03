@@ -11,7 +11,7 @@ sys.stdout.reconfigure(encoding = 'utf-8')
 
 def call_apis(country):
     #news_api_key = "65bc8405516b8eeece5b4e5741ab6851"
-    news_api_key = "63dd5a5967d4ca766cbfceddedac13b1"
+    #news_api_key = "7517734784ad018bd28a66356dce3aca"
 
     country_api_url = f"https://restcountries.com/v3.1/alpha/{country}"
     news_api_url = f'https://gnews.io/api/v4/top-headlines?country={country.lower()}&apikey={news_api_key}'
@@ -301,6 +301,8 @@ def headlines_per_reigon():
 
     return region_counts
 
+headlines_per_reigon()
+
 def create_scatter_plot(df):
     #pick something else besides independent 
     plt.scatter(df["region"], df["headline_count"])
@@ -328,10 +330,3 @@ def main():
     create_scatter_plot(df)
 
 main()
-
-
-#test cases 
-class TestCases(unittest.TestCase):
-    #add in test cases for all functions 
-    if __name__ == 'main':
-        unittest.main()
