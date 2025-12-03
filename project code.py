@@ -10,8 +10,8 @@ import sys
 sys.stdout.reconfigure(encoding = 'utf-8')
 
 def call_apis(country):
-    #news_api_key = "65bc8405516b8eeece5b4e5741ab6851"
-    news_api_key = "05bf2fe9d109116a0c3c2acba93a6f39"
+    news_api_key = "65bc8405516b8eeece5b4e5741ab6851" #iliana 
+    #news_api_key = "05bf2fe9d109116a0c3c2acba93a6f39"
 
     country_api_url = f"https://restcountries.com/v3.1/alpha/{country}"
     news_api_url = f'https://gnews.io/api/v4/top-headlines?country={country.lower()}&apikey={news_api_key}'
@@ -276,16 +276,16 @@ def join_headline_and_country_data():
 
 def create_scatter_plot(df):
     #pick something else besides independent 
-    plt.scatter(df["independent"], df["headline_count"])
-    plt.title("Scatterplot of Headlines by Independent Status")
-    plt.xlabel("Country's Independence Status")
+    plt.scatter(df["region"], df["headline_count"])
+    plt.title("Scatterplot of Headline Count by Region")
+    plt.xlabel("Country's Region")
     plt.ylabel("Number of Headlines")
     plt.show()
 
 def create_boxplot(df):
-    df.boxplot(column="headline_count", by="independent")
-    plt.title(f"Boxplot of Headlines by Independent Status")
-    plt.xlabel("Country's Independence Status")
+    df.boxplot(column="headline_count", by="region")
+    plt.title(f"Boxplot of Headlines by Region")
+    plt.xlabel("Country's Region")
     plt.ylabel("Number of Headlines")
     plt.show()
 
