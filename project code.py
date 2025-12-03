@@ -11,7 +11,7 @@ sys.stdout.reconfigure(encoding = 'utf-8')
 
 def call_apis(country):
     #news_api_key = "65bc8405516b8eeece5b4e5741ab6851" #iliana
-    #news_api_key = "ce61d3ddb5a4c64c22ff1b1ba85cd9d4" #avery
+    news_api_key = "ce61d3ddb5a4c64c22ff1b1ba85cd9d4" #avery
 
     country_api_url = f"https://restcountries.com/v3.1/alpha/{country}"
     news_api_url = f'https://gnews.io/api/v4/top-headlines?country={country.lower()}&apikey={news_api_key}'
@@ -76,7 +76,6 @@ print(json.dumps(all_data, indent=4))
 
 #https://restcountries.com/v3.1/independent?status=true 
 
-#shows up if its the same
 def store_headlines():
     resp = requests.get("https://restcountries.com/v3.1/all?fields=name,cca2")
     if resp.status_code != 200:
