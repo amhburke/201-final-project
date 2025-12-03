@@ -4,14 +4,13 @@ import json
 import sqlite3
 import pandas as pd 
 import matplotlib.pyplot as plt 
-import unittest 
 import sys 
 
 sys.stdout.reconfigure(encoding = 'utf-8')
 
 def call_apis(country):
-    #news_api_key = "65bc8405516b8eeece5b4e5741ab6851"
-    news_api_key = "63dd5a5967d4ca766cbfceddedac13b1"
+    news_api_key = "65bc8405516b8eeece5b4e5741ab6851" #iliana
+    #news_api_key = "63dd5a5967d4ca766cbfceddedac13b1" 
 
     country_api_url = f"https://restcountries.com/v3.1/alpha/{country}"
     news_api_url = f'https://gnews.io/api/v4/top-headlines?country={country.lower()}&apikey={news_api_key}'
@@ -21,8 +20,6 @@ def call_apis(country):
     
     #print(response_country.json())
     return response_country.json(), response_news.json()
-
-call_apis("US")
 
 def get_headlines(country_code):
     country_data, news_data = call_apis(country_code)
