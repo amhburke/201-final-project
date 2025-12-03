@@ -11,7 +11,7 @@ sys.stdout.reconfigure(encoding = 'utf-8')
 
 def call_apis(country):
     #news_api_key = "65bc8405516b8eeece5b4e5741ab6851" #iliana
-    news_api_key = "7517734784ad018bd28a66356dce3aca" #avery
+    #news_api_key = "ce61d3ddb5a4c64c22ff1b1ba85cd9d4" #avery
 
     country_api_url = f"https://restcountries.com/v3.1/alpha/{country}"
     news_api_url = f'https://gnews.io/api/v4/top-headlines?country={country.lower()}&apikey={news_api_key}'
@@ -104,11 +104,11 @@ def store_headlines():
     for row in rows:
         existing_countries.add(row[0])
 
-    limit = 25
-    count_countries = 0
+    limit = 25               
+    new_headlines = 0        
 
     for info in countries:
-        if count_countries >= limit:
+        if new_headlines >= limit:
             break
 
         name_info = info.get("name", {})
@@ -132,7 +132,10 @@ def store_headlines():
             print("No headlines found for", country_name)
             continue
 
-        for h in headlines: 
+        for h in headlines:
+            if new_headlines >= limit:
+                break
+
             cur.execute("""
                 INSERT OR IGNORE INTO headlines (country, title, source, publishedAt, url)
                 VALUES (?, ?, ?, ?, ?)
@@ -143,14 +146,15 @@ def store_headlines():
                 h["publishedAt"],
                 h["url"]
             ))
+
+            if cur.rowcount > 0:
+                new_headlines += 1
+
         existing_countries.add(country_name)
-        count_countries += 1
 
     conn.commit()
     conn.close()
     
-    print(f"{country_code} headlines added to 'headlines' table.") 
-
 store_headlines()
 
 
@@ -305,18 +309,11 @@ def headlines_per_reigon():
 headlines_per_reigon()
 
 def create_scatter_plot(df):
-    region_counts = headlines_per_reigon()
-
-    regions = list(region_counts.keys())
-    counts = list(region_counts.values())
-
-    plt.figure(figsize=(8,5))
-    plt.scatter(regions, counts)
+    #pick something else besides independent 
+    plt.scatter(df["region"], df["headline_count"])
     plt.title("Scatterplot of Headline Count by Region")
-    plt.xlabel("Region")
-    plt.ylabel("Total Headlines")
-    plt.xticks(rotation=45)
-    plt.tight_layout()
+    plt.xlabel("Country's Region")
+    plt.ylabel("Number of Headlines")
     plt.show()
 
 def create_boxplot(df):
