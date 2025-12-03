@@ -10,8 +10,8 @@ import sys
 sys.stdout.reconfigure(encoding = 'utf-8')
 
 def call_apis(country):
-    #news_api_key = "65bc8405516b8eeece5b4e5741ab6851" #iliana
-    news_api_key = "ce61d3ddb5a4c64c22ff1b1ba85cd9d4" #avery
+    news_api_key = "e6dd185291d51a4ef822e45c5b359069" #iliana
+    #news_api_key = "ce61d3ddb5a4c64c22ff1b1ba85cd9d4" #avery
 
     country_api_url = f"https://restcountries.com/v3.1/alpha/{country}"
     news_api_url = f'https://gnews.io/api/v4/top-headlines?country={country.lower()}&apikey={news_api_key}'
@@ -157,6 +157,50 @@ def store_headlines():
     
 store_headlines()
 
+def country_id_table():
+
+    resp = requests.get("https://restcountries.com/v3.1/all?fields=name,cca2")
+    if resp.status_code != 200:
+        print("Error")
+        return 
+    
+    countries = resp.json()
+
+    conn = sqlite3.connect("countrynews.db")
+    cur = conn.cursor()
+
+    cur.execute("DROP TABLE IF EXISTS country_ids")
+
+    cur.execute("""
+                CREATE TABLE IF NOT EXISTS country_ids (
+                id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                country_code TEXT UNIQUE, 
+                country_name TEXT)
+                """)
+    
+    limit = 25 
+    count_countries = 0 
+
+    for info in countries: 
+        if count_countries >= limit:
+            break 
+    
+        common_name = info["name"]["common"]
+        country_code = info["cca2"].upper()
+
+        cur.execute("""
+                INSERT OR IGNORE INTO country_ids (country_code, country_name)
+                    VALUES (?,?)
+                    """, (country_code, common_name))
+        
+        count_countries += 1 
+
+    conn.commit()
+    conn.close()
+
+    print("Created country id table.")
+
+country_id_table()
 
 #putting country data in the database 
 #store_headlines("US")   # United States
