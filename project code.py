@@ -1,4 +1,3 @@
-
 #Names: Iliana Chevres and Avery Burke 
 import requests 
 import json
@@ -11,12 +10,13 @@ import sys
 sys.stdout.reconfigure(encoding = 'utf-8')
 
 def call_apis(country):
-    news_api_key = "65bc8405516b8eeece5b4e5741ab6851"
+    # iliana news_api_key = "65bc8405516b8eeece5b4e5741ab6851"
+    news_api_key = "3d234e0bcad1631cbd31fac995d6ac72"
 
     country_api_url = f"https://restcountries.com/v3.1/name/{country}"
     news_api_url = f'https://gnews.io/api/v4/top-headlines?country={country.lower()}&apikey={news_api_key}'
     
-    response_country = requests.get(country_api_url, params = {"country": country})
+    response_country = requests.get(country_api_url)
     response_news = requests.get(news_api_url)
     
     #print(response_country.json())
@@ -80,6 +80,7 @@ print(json.dumps(all_data, indent=4))
 #https://restcountries.com/v3.1/independent?status=true 
 
 def store_headlines(country_code):
+    country_name = country_code
     country_data, _ = call_apis(country_code)
 
     country_name = country_code 
@@ -110,28 +111,25 @@ def store_headlines(country_code):
     
     for h in headlines: 
         cur.execute("""
-                INSERT INTO headlines (country, title, source, publishedAt, url)
-                    VALUES (?,?,?,?,?)
-                    """, (h["country"], h["title"], h["source"], h["publishedAt"], h["url"]))
-        headlines_dict = {
-            "official_name": h["country"],
-            "article title": h["title"],
-            "source": h["source"],
-            "published at": h["publishedAt"],
-            "url": h["url"]
-        }
-
+            INSERT INTO headlines (country, title, source, publishedAt, url)
+            VALUES (?,?,?,?,?)
+        """, (
+            country_name,           
+            h["title"],
+            h["source"],
+            h["publishedAt"],
+            h["url"]
+        ))
     conn.commit()
     conn.close()
 
     print(f"{headlines_dict} for {country_code}")
 
 #putting country data in the database 
-store_headlines("fr")
-store_headlines("us")
-store_headlines("ra")
-store_headlines("mx")
-store_headlines("fr")
+store_headlines("US")   # United States
+store_headlines("MX")   # Mexico
+store_headlines("AI")   # Anguilla
+store_headlines("FR")   # France
 
 
 def store_country_data(all_data):
@@ -318,4 +316,3 @@ class TestCases(unittest.TestCase):
     #add in test cases for all functions 
     if __name__ == 'main':
         unittest.main()
-
