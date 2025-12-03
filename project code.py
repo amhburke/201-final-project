@@ -6,11 +6,12 @@ import pandas as pd
 import matplotlib.pyplot as plt 
 import sys 
 
+
 sys.stdout.reconfigure(encoding = 'utf-8')
 
 def call_apis(country):
-    #news_api_key = "65bc8405516b8eeece5b4e5741ab6851"
-    #news_api_key = "7517734784ad018bd28a66356dce3aca"
+    #news_api_key = "65bc8405516b8eeece5b4e5741ab6851" #iliana
+    news_api_key = "7517734784ad018bd28a66356dce3aca" #avery
 
     country_api_url = f"https://restcountries.com/v3.1/alpha/{country}"
     news_api_url = f'https://gnews.io/api/v4/top-headlines?country={country.lower()}&apikey={news_api_key}'
@@ -295,6 +296,9 @@ def headlines_per_reigon():
     print("Headlines per region:")
     for region in region_counts:
         print(region + ":", region_counts[region])
+
+    with open("headlines_per_region.json", "w", encoding="utf-8") as f:
+        json.dump(region_counts, f, indent=4)
 
     return region_counts
 
