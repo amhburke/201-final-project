@@ -3,20 +3,21 @@
 import requests 
 import json
 import sqlite3
+import pandas as pd 
 import matplotlib as plt 
 import unittest 
 import sys 
+
 sys.stdout.reconfigure(encoding = 'utf-8')
 
 def call_apis(country):
     news_api_key = "65bc8405516b8eeece5b4e5741ab6851"
 
-    #have to use different urls for the country api to access the different stuff?
     country_api_url = f"https://restcountries.com/v3.1/name/{country}"
-    news_api_url = f'https://gnews.io/api/v4/top-headlines?country = {country}&apikey={news_api_key}'
+    news_api_url = f'https://gnews.io/api/v4/top-headlines?country={country.lower()}&apikey={news_api_key}'
     
     response_country = requests.get(country_api_url, params = {"country": country})
-    response_news = requests.get(news_api_url, params={"country": country.lower(), "apiKey": news_api_key})
+    response_news = requests.get(news_api_url)
     
     #print(response_country.json())
     return response_country.json(), response_news.json()
@@ -34,6 +35,7 @@ def get_headlines(country):
                 "source": article.get("source", {}).get("name"),
                 "publishedAt" : article.get("publishedAt"),
                 "url" : article.get("url")})
+    
     return headlines 
 
 def get_country_status():
@@ -73,12 +75,15 @@ print(json.dumps(all_data, indent=4))
 #print("First 5 country names:", list(all_data.keys())[:5])
 
 #https://restcountries.com/v3.1/independent?status=true 
+
 def store_headlines(country):
+
     headlines = get_headlines(country)
-    print(country, len(headlines))
+    #print(country, len(headlines))
     conn = sqlite3.connect('countrynews.db')
     cur = conn.cursor()
     #cur.execute('''  DROP TABLE IF EXISTS headlines''')
+
     cur.execute('''
                 CREATE TABLE IF NOT EXISTS headlines (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -97,7 +102,7 @@ def store_headlines(country):
     conn.commit()
     conn.close()
     
-    print(f"{country} headlines added to 'headlines' table and 'countrynews.db' created.") 
+    print(f"{country} headlines added to 'headlines' table.") 
 
 #putting country data in the database 
 store_headlines("fr")
@@ -197,7 +202,18 @@ def calculate_relationship_status():
     pass 
 
 def join_headline_and_country_data():
-    pass 
+    conn = sqlite3.connect("countrynews.db")
+
+    df = pd.read_sql_query("""
+            SELECT h.country, c.independent, COUNT(h.id) AS headline_count
+                           FROM headlines h 
+                           JOIN country_status c 
+                           ON h.country = c.name 
+                           GROUP BY h.country
+                           """, conn)
+    
+    conn.close()
+    return df 
 
 def create_scatter_plot():
     pass 
