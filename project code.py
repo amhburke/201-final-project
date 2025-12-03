@@ -79,54 +79,74 @@ print(json.dumps(all_data, indent=4))
 #https://restcountries.com/v3.1/independent?status=true 
 
 def store_headlines():
-    country_name = country_code
-    country_data, _ = call_apis(country_code)
-
-    if isinstance(country_data, list) and len(country_data) > 0:
-        first = country_data[0]
-        name_info = first.get("name", {})
-        common_name = name_info.get("common")
-        if common_name:
-            country_name = common_name
-
-    headlines = get_headlines(country_code)
-    #print(country, len(headlines))
+    resp = requests.get("https://restcountries.com/v3.1/all?fields=name,cca2")
+    if resp.status_code != 200:
+        print("Error fetching country codes:", resp.status_code)
+        return
+    
+    countries = resp.json()
+    
     conn = sqlite3.connect('countrynews.db')
     cur = conn.cursor()
-    #cur.execute('''  DROP TABLE IF EXISTS headlines''')
 
     cur.execute('''
-                CREATE TABLE IF NOT EXISTS headlines (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                country TEXT, 
-                title TEXT, 
-                source TEXT, 
-                publishedAt TEXT, 
-                url TEXT
-                )
-                ''')
-    
-    for h in headlines: 
-        cur.execute("""
-            INSERT INTO headlines (country, title, source, publishedAt, url)
-            VALUES (?,?,?,?,?)
-        """, (
-            country_name,           
-            h["title"],
-            h["source"],
-            h["publishedAt"],
-            h["url"]
-        ))
+        CREATE TABLE IF NOT EXISTS headlines (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            country TEXT,
+            title TEXT,
+            source TEXT,
+            publishedAt TEXT,
+            url TEXT UNIQUE
+        )
+    ''')
+
+    limit = 10
+    count_countries = 0
+
+    for info in countries:
+        if count_countries >= limit:
+            break
+        name_info = info.get("name", {})
+        common_name = name_info.get("common")    
+        code = info.get("cca2")
+
+        if not common_name or not code:
+            continue
+
+        country_name = common_name
+        country_code = code.upper()
+
+        print("Getting headlines for", country_name, "with code", country_code)
+
+        headlines = get_headlines(country_code)
+
+
+        for h in headlines: 
+            cur.execute("""
+                INSERT OR IGNORE INTO headlines (country, title, source, publishedAt, url)
+                VALUES (?, ?, ?, ?, ?)
+            """, (
+                country_name,
+                h["title"],
+                h["source"],
+                h["publishedAt"],
+                h["url"]
+            ))
+        count_countries += 1
+
     conn.commit()
     conn.close()
     
     print(f"{country_code} headlines added to 'headlines' table.") 
+    
+store_headlines()
+
 
 #putting country data in the database 
-store_headlines("US")   # United States
-store_headlines("MX")   # Mexico
-store_headlines("AI")   # Anguilla
-store_headlines("FR")   # France
+#store_headlines("US")   # United States
+#store_headlines("MX")   # Mexico
+#store_headlines("AI")   # Anguilla
+#store_headlines("FR")   # France
 
 
 def store_country_data(all_data):
