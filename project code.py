@@ -328,10 +328,3 @@ def main():
     create_scatter_plot(df)
 
 main()
-
-
-#test cases 
-class TestCases(unittest.TestCase):
-    #add in test cases for all functions 
-    if __name__ == 'main':
-        unittest.main()
