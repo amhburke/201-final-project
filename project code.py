@@ -305,11 +305,18 @@ def headlines_per_reigon():
 headlines_per_reigon()
 
 def create_scatter_plot(df):
-    #pick something else besides independent 
-    plt.scatter(df["region"], df["headline_count"])
+    region_counts = headlines_per_reigon()
+
+    regions = list(region_counts.keys())
+    counts = list(region_counts.values())
+
+    plt.figure(figsize=(8,5))
+    plt.scatter(regions, counts)
     plt.title("Scatterplot of Headline Count by Region")
-    plt.xlabel("Country's Region")
-    plt.ylabel("Number of Headlines")
+    plt.xlabel("Region")
+    plt.ylabel("Total Headlines")
+    plt.xticks(rotation=45)
+    plt.tight_layout()
     plt.show()
 
 def create_boxplot(df):
