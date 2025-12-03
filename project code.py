@@ -10,8 +10,8 @@ import sys
 sys.stdout.reconfigure(encoding = 'utf-8')
 
 def call_apis(country):
-    news_api_key = "65bc8405516b8eeece5b4e5741ab6851" #iliana 
-    #news_api_key = "05bf2fe9d109116a0c3c2acba93a6f39"
+    #news_api_key = "65bc8405516b8eeece5b4e5741ab6851"
+    news_api_key = "63dd5a5967d4ca766cbfceddedac13b1"
 
     country_api_url = f"https://restcountries.com/v3.1/alpha/{country}"
     news_api_url = f'https://gnews.io/api/v4/top-headlines?country={country.lower()}&apikey={news_api_key}'
@@ -106,7 +106,7 @@ def store_headlines():
     for row in rows:
         existing_countries.add(row[0])
 
-    limit = 10
+    limit = 25
     count_countries = 0
 
     for info in countries:
@@ -250,7 +250,7 @@ def count_headlines_by_month(country, month):
     conn.close()
     return count 
 
-def headlines_per_reigon():
+def headlines_per_reigon(): 
     pass
 
 def join_headline_and_country_data():
