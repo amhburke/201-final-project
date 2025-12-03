@@ -199,7 +199,50 @@ def count_headlines_by_month(country, month):
     return count 
 
 def average_headlines_independent():
-    pass 
+    conn = sqlite3.connect("countrynews.db")
+    cur = conn.cursor()
+
+    cur.execute("SELECT name FROM country_status WHERE independent = 1")
+    rows = cur.fetchall()
+
+    independent_countries = []
+    for row in rows:
+        independent_countries.append(row[0])
+
+    if len(independent_countries) == 0:
+        conn.close()
+        print("No independent countries found in database.")
+        return 0.0
+
+    total_headlines = 0
+    num_countries = 0
+
+    for country_name in independent_countries:
+
+        simple_code = country_name.lower()[:2]     
+        simple_code_upper = simple_code.upper()
+
+        cur.execute("""
+            SELECT COUNT(*) FROM headlines
+            WHERE country = ? OR country = ? OR country = ?
+        """, (country_name, simple_code, simple_code_upper))
+
+        count = cur.fetchone()[0]
+
+        total_headlines += count
+        num_countries += 1
+
+    if num_countries == 0:
+        average = 0.0
+    else:
+        average = total_headlines / float(num_countries)
+
+    conn.close()
+    
+    print("Average headlines per independent country:", average)
+    return average
+
+average_headlines_independent()
 
 def join_headline_and_country_data():
     conn = sqlite3.connect("countrynews.db")
