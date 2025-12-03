@@ -115,10 +115,10 @@ def store_headlines(country_code):
     print(f"{country_name} headlines added to 'headlines' table.") 
 
 #putting country data in the database 
-store_headlines("fr")
-store_headlines("US")
+store_headlines("us")
 store_headlines("ra")
 store_headlines("mx")
+store_headlines("fr")
 
 
 def store_country_data(all_data):
