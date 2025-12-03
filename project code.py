@@ -76,9 +76,19 @@ print(json.dumps(all_data, indent=4))
 
 #https://restcountries.com/v3.1/independent?status=true 
 
-def store_headlines(country):
+def store_headlines(country_code):
+    country_data, _ = call_apis(country_code)
 
-    headlines = get_headlines(country)
+    country_name = country_code
+
+    if isinstance(country_data, list) and len(country_data) > 0:
+        first = country_data[0]
+        name_info = first.get("name", {})
+        common_name = name_info.get("common")
+        if common_name:
+            country_name = common_name
+
+    headlines = get_headlines(country_code)
     #print(country, len(headlines))
     conn = sqlite3.connect('countrynews.db')
     cur = conn.cursor()
@@ -98,11 +108,11 @@ def store_headlines(country):
         cur.execute("""
                 INSERT INTO headlines (country, title, source, publishedAt, url)
                     VALUES (?,?,?,?,?)
-                    """, (country, h["title"], h["source"], h["publishedAt"], h["url"]))
+                    """, (country_name, h["title"], h["source"], h["publishedAt"], h["url"]))
     conn.commit()
     conn.close()
     
-    print(f"{country} headlines added to 'headlines' table.") 
+    print(f"{country_name} headlines added to 'headlines' table.") 
 
 #putting country data in the database 
 store_headlines("fr")
