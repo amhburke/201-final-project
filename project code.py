@@ -202,9 +202,16 @@ def calculate_relationship_status():
     pass 
 
 def join_headline_and_country_data():
+    #make it 
+    country_codes = {"us": "United States",
+                     "fr": "France", 
+                     "mx" : "Mexico",
+                     "ca" : "Canada"}
+    
     conn = sqlite3.connect("countrynews.db")
-
-    df = pd.read_sql_query("""
+    
+    for item in country_codes:
+        df = pd.read_sql_query("""
             SELECT h.country, c.independent, COUNT(h.id) AS headline_count
                            FROM headlines h 
                            JOIN country_status c 
