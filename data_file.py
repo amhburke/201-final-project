@@ -31,7 +31,7 @@ def get_headlines(country_code):
     country_data, news_data = call_apis(country_code)
 
     headlines = []
-    print(news_data)
+    #print(news_data)
 
     if "articles" in news_data: 
         for article in news_data["articles"]:
@@ -148,6 +148,7 @@ def store_headlines():
         CREATE TABLE IF NOT EXISTS headlines (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             country_id INTEGER,
+            country_code TEXT,
             title TEXT,
             source TEXT,
             publishedAt TEXT,
@@ -196,10 +197,11 @@ def store_headlines():
                 break
 
             cur.execute("""
-                INSERT OR IGNORE INTO headlines (country_id, title, source, publishedAt, url)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT OR IGNORE INTO headlines (country_id, country_code, title, source, publishedAt, url)
+                VALUES (?, ?, ?, ?, ?, ?)
             """, (
                 id,
+                country_code,
                 h["title"],
                 h["source"],
                 h["publishedAt"],
