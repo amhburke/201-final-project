@@ -4,8 +4,6 @@
 import requests 
 import json
 import sqlite3
-import pandas as pd 
-import matplotlib.pyplot as plt 
 import sys 
 
 #scatterplot needs to show info from json - change scatterplot 
@@ -21,7 +19,7 @@ def call_apis(country):
     #news_api_key = "ce61d3ddb5a4c64c22ff1b1ba85cd9d4" #avery
 
     country_api_url = f"https://restcountries.com/v3.1/alpha/{country}"
-    news_api_url = f'https://gnews.io/api/v4/top-headlines?&apikey={news_api_key}'
+    news_api_url = f'https://gnews.io/api/v4/search?q=*&apikey={news_api_key}'
     
     response_country = requests.get(country_api_url)
     response_news = requests.get(news_api_url)
