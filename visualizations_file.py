@@ -15,10 +15,10 @@ def join_headline_and_country_data():
     conn = sqlite3.connect("countrynews.db")
     
     df = pd.read_sql_query("""
-            SELECT h.country, c.independent, c.region, COUNT(h.id) AS headline_count
+            SELECT h.country_id, c.country_id, c.independent, c.region, COUNT(h.id) AS headline_count
                            FROM headlines h 
                            JOIN country_status c 
-                           ON h.country = c.name 
+                           ON h.country_id = c.country_id
                            GROUP BY h.country, c.independent, c.region
                            """, conn)
     
