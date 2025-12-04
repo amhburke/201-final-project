@@ -14,20 +14,16 @@ def join_headline_and_country_data():
 
     conn = sqlite3.connect("countrynews.db")
     
+    
+    
     df = pd.read_sql_query("""
-            SELECT h.country_id, c.country_id, c.independent, c.region, COUNT(h.id) AS headline_count
+            SELECT h.country_code, h.country_id, c.name, c.independent, c.region, COUNT(h.id) AS headline_count
                            FROM headlines h 
                            JOIN country_status c 
                            ON h.country_id = c.country_id
-                           GROUP BY h.country, c.independent, c.region
+                           GROUP BY h.country_id, h.country_code, c.independent, c.region
                            """, conn)
-    
-    conn.execute("""DROP TABLE IF EXISTS joined_data""")
-    
-    #saving data frame as a sql table - change this so it doesn't save 
-    df.to_sql("joined_data", conn, index=False)
-    
-    conn.commit()
+
     conn.close()
     return df 
 
@@ -36,10 +32,10 @@ def headlines_per_reigon():
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT c.region, COUNT(h.id) AS total_headlines
+        SELECT c.region, COUNT(h.country_id) AS total_headlines
         FROM headlines h
         JOIN country_status c
-            ON h.country = c.name
+            ON h.country_id = c.country_id
         GROUP BY c.region
     """)
 
@@ -72,7 +68,7 @@ def create_bar_chart(df):
    
     #all returning as 10s, make it based on country?
     plt.figure(figsize=(8,6))
-    plt.bar(df_limited["country"], df_limited["headline_count"])
+    plt.bar(df_limited["name"], df_limited["headline_count"])
     plt.title("Barchart of Headline Count by Country")
     plt.xlabel("Country")
     plt.ylabel("Number of Headlines")
