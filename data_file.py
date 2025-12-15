@@ -6,17 +6,11 @@ import json
 import sqlite3
 import sys 
 
-#scatterplot needs to show info from json - change to barchart  
-#data fetching/storing one file and then visualizations and calculations in another 
-#integer key thing to join function 
-#dont call specific countries 
-#join function should not be storing data, just making it temporarily so calculations can be called on it 
-
 sys.stdout.reconfigure(encoding = 'utf-8')
 
 def call_apis(country):
-    #news_api_key = "e6dd185291d51a4ef822e45c5b359069" #iliana
-    news_api_key = "ce61d3ddb5a4c64c22ff1b1ba85cd9d4" #avery
+    news_api_key = "e6dd185291d51a4ef822e45c5b359069" #iliana
+    #news_api_key = "ce61d3ddb5a4c64c22ff1b1ba85cd9d4" #avery
 
     country_api_url = f"https://restcountries.com/v3.1/alpha/{country}"
     news_api_url = f'https://gnews.io/api/v4/top-headlines?country={country.lower()}&apikey={news_api_key}'
@@ -28,15 +22,12 @@ def call_apis(country):
     return response_country.json(), response_news.json()
 
 def get_headlines(country_code):
-    country_data, news_data = call_apis(country_code)
+    __, news_data = call_apis(country_code)
 
     headlines = []
-    #print(news_data)
 
-    if "articles" in news_data: 
-        for article in news_data["articles"]:
-            headlines.append({
-                "country" : country_code,
+    for article in news_data.get("articles", []):
+        headlines.append({
                 "title": article.get("title"), 
                 "url" : article.get("url")})
     
@@ -60,7 +51,7 @@ def get_country_status():
 
         status = {
             "official_name": info.get("name", {}).get("official"),
-            "region": info.get("region"),
+            "region_name": info.get("region"),
             "independent": info.get("independent"),
             "un_member": info.get("unMember")
         }
@@ -177,13 +168,13 @@ def get_region_ids():
     region_ids = cur.fetchall()
 
     conn.close()
-    return {region: id for region, id in region_ids}
+    return {name: rid for rid, name in region_ids}
 
 
 def store_headlines():
-    #making country ids 
+
     ids = get_country_ids()
-    #add &page=# to url call? 
+  
     resp = requests.get("https://restcountries.com/v3.1/all?fields=name,cca2")
     if resp.status_code != 200:
         print("Error fetching country codes:", resp.status_code)
@@ -200,18 +191,17 @@ def store_headlines():
         CREATE TABLE IF NOT EXISTS headlines (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             country_id INTEGER,
-            country_code TEXT,
             title TEXT,
             url TEXT UNIQUE,
             FOREIGN KEY(country_id) REFERENCES country_ids(id)
         )
     ''')
 
-    existing_countries = set()
+    existing_country_ids = set()
     cur.execute("SELECT DISTINCT country_id FROM headlines")
     rows = cur.fetchall()
     for row in rows:
-        existing_countries.add(row[0])
+        existing_country_ids.add(row[0])
 
     limit = 25               
     new_headlines = 0        
@@ -228,11 +218,12 @@ def store_headlines():
         if not common_name or not code or not id:
             continue
 
+        if id in existing_country_ids:
+            continue 
+
         country_name = common_name
         country_code = code.upper()
 
-        if country_name in existing_countries:
-            continue
 
         print("Getting headlines for", country_name, "with code", country_code)
 
@@ -247,11 +238,10 @@ def store_headlines():
                 break
 
             cur.execute("""
-                INSERT OR IGNORE INTO headlines (country_id, country_code, title, url)
-                VALUES (?, ?, ?, ?)
+                INSERT OR IGNORE INTO headlines (country_id, title, url)
+                VALUES (?, ?, ?)
             """, (
                 id,
-                country_code,
                 h["title"],
                 h["url"]
             ))
@@ -259,7 +249,7 @@ def store_headlines():
             if cur.rowcount > 0:
                 new_headlines += 1
 
-        existing_countries.add(country_name)
+        existing_country_ids.add(id)
 
     conn.commit()
     conn.close()
@@ -267,21 +257,24 @@ def store_headlines():
 
 def store_country_data(all_data):
 
-    ids = get_country_ids()
+    country_ids = get_country_ids()
+    region_ids = get_region_ids()
 
     conn = sqlite3.connect("countrynews.db")
     cur = conn.cursor()
 
     #cur.execute("DROP TABLE IF EXISTS country_status")
+
     cur.execute("""
         CREATE TABLE IF NOT EXISTS country_status (
             country_id INTEGER,
             name TEXT PRIMARY KEY,
             official_name TEXT,
-            region TEXT,
+            region_id INTEGER,
             independent INTEGER,
             un_member INTEGER, 
-            FOREIGN KEY(country_id) REFERENCES country_ids(id)
+            FOREIGN KEY(country_id) REFERENCES country_ids(id), 
+            FOREIGN KEY(region_id) REFERENCES region_ids(region_id)
         )
     """)
     
@@ -301,9 +294,14 @@ def store_country_data(all_data):
         if rows_added >= limit:
             break
         
-        country_id = ids.get(country_name)
+        country_id = country_ids.get(country_name)
         if country_id is None:
             continue 
+
+        region_name = info.get("region_name")
+        print("Looking up region:", region_name)
+        region_id = region_ids.get(region_name)
+        print("Region ID:", region_ids)
 
         independent_val = None
         if isinstance(info.get("independent"), bool):
@@ -315,14 +313,14 @@ def store_country_data(all_data):
 
         cur.execute("""
             INSERT OR REPLACE INTO country_status
-            (country_id, name, official_name, region,
+            (country_id, name, official_name, region_id,
              independent, un_member)
             VALUES (?, ?, ?, ?, ?, ?)
         """, (
             country_id, 
             country_name,
             info.get("official_name"),
-            info.get("region"),
+            region_id,
             independent_val,
             un_member_val
         ))
@@ -338,21 +336,6 @@ def store_country_data(all_data):
     print("Database now contains", total_rows, "rows total.")
 
     conn.close() 
-
-def count_headlines_by_month(country, month):
-    conn = sqlite3.connect("countrynews.db")
-    cur = conn.cursor()
-
-    cur.execute("""
-                SELECT COUNT(*) FROM headlines 
-                WHERE country = ? AND substr(publishedAt, 6, 2) = ?
-                """, (country, month))
-    
-    count = cur.fetchone()[0]
-    conn.close()
-    return count 
-
-
 
 def main():
     region_id_table()

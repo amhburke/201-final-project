@@ -17,11 +17,11 @@ def join_headline_and_country_data():
     
     
     df = pd.read_sql_query("""
-            SELECT h.country_code, h.country_id, c.name, c.independent, c.region, COUNT(h.id) AS headline_count
+            SELECT h.country_code, h.country_id, c.name, c.independent, c.region_id, COUNT(h.id) AS headline_count
                            FROM headlines h 
                            JOIN country_status c 
                            ON h.country_id = c.country_id
-                           GROUP BY h.country_id, h.country_code, c.independent, c.region
+                           GROUP BY h.country_id, h.country_code, c.independent, c.region_id
                            """, conn)
 
     conn.close()
@@ -32,11 +32,11 @@ def headlines_per_reigon():
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT c.region, COUNT(h.country_id) AS total_headlines
+        SELECT c.region_id, COUNT(h.country_id) AS total_headlines
         FROM headlines h
         JOIN country_status c
             ON h.country_id = c.country_id
-        GROUP BY c.region
+        GROUP BY c.region_id
     """)
 
     rows = cur.fetchall()
