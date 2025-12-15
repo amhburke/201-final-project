@@ -111,6 +111,7 @@ def country_id_table():
 
     print("Created country id table.")
 
+#dealing with duplicate string data 
 def get_country_ids():
     country_id_table()
     conn = sqlite3.connect("countrynews.db")
@@ -121,6 +122,55 @@ def get_country_ids():
 
     conn.close()
     return {name: cid for name, cid in rows}
+
+def region_id_table():
+    url = "https://restcountries.com/v3.1/all?fields=name,capital,region,subregion,population,independent,status,unMember"
+    resp = requests.get(url)
+
+    if resp.status_code != 200:
+        print("Error:", resp.status_code, resp.text)
+        return {}
+    
+    countries = resp.json()
+
+    conn = sqlite3.connect("countrynews.db")
+    cur = conn.cursor()
+
+    cur.execute("DROP TABLE IF EXISTS region_ids")
+
+    cur.execute("""
+                CREATE TABLE IF NOT EXISTS region_ids (
+                id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                region_id INTEGER UNIQUE,  
+                region_name TEXT)
+                """)
+
+    regions = {}
+    count = 0
+    for info in countries: 
+    
+        region_name = info["region"]
+        count += 1 
+        if region_name in regions:
+            continue 
+        else: 
+            regions[region_name] = count 
+        
+            cur.execute("""
+                INSERT OR IGNORE INTO region_ids (region_id, region_name)
+                    VALUES (?,?)
+                    """, (regions[region_name], region_name))
+    print(regions)
+
+    conn.commit()
+    conn.close()
+
+    print("Created region id table.")
+
+
+def get_region_ids():
+    pass 
+
 
 def store_headlines():
     #making country ids 
@@ -297,6 +347,7 @@ def count_headlines_by_month(country, month):
 
 
 def main():
+    region_id_table()
     country_id_table()
     store_headlines()
     all_data = get_country_status()      
