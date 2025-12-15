@@ -64,7 +64,7 @@ headlines_per_reigon()
 
 #GRAPHS 
 def create_bar_chart(df):
-    df_limited = df.sort_values(by='headline_count').head(5)
+    df_limited = df.sort_values(by='headline_count').head(20)
    
     #all returning as 10s, make it based on country?
     plt.figure(figsize=(8,6))

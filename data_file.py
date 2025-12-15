@@ -169,7 +169,15 @@ def region_id_table():
 
 
 def get_region_ids():
-    pass 
+    region_id_table()
+    conn = sqlite3.connect("countrynews.db")
+    cur = conn.cursor()
+
+    cur.execute(" SELECT region_id, region_name FROM region_ids")
+    region_ids = cur.fetchall()
+
+    conn.close()
+    return {region: id for region, id in region_ids}
 
 
 def store_headlines():
