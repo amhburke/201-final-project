@@ -15,8 +15,8 @@ import sys
 sys.stdout.reconfigure(encoding = 'utf-8')
 
 def call_apis(country):
-    news_api_key = "e6dd185291d51a4ef822e45c5b359069" #iliana
-    #news_api_key = "ce61d3ddb5a4c64c22ff1b1ba85cd9d4" #avery
+    #news_api_key = "e6dd185291d51a4ef822e45c5b359069" #iliana
+    news_api_key = "ce61d3ddb5a4c64c22ff1b1ba85cd9d4" #avery
 
     country_api_url = f"https://restcountries.com/v3.1/alpha/{country}"
     news_api_url = f'https://gnews.io/api/v4/top-headlines?country={country.lower()}&apikey={news_api_key}'
@@ -38,8 +38,6 @@ def get_headlines(country_code):
             headlines.append({
                 "country" : country_code,
                 "title": article.get("title"), 
-                "source": article.get("source", {}).get("name"),
-                "publishedAt" : article.get("publishedAt"),
                 "url" : article.get("url")})
     
     return headlines 
@@ -62,12 +60,8 @@ def get_country_status():
 
         status = {
             "official_name": info.get("name", {}).get("official"),
-            "capital": info.get("capital", [None])[0] if info.get("capital") else None,
             "region": info.get("region"),
-            "subregion": info.get("subregion"),
-            "population": info.get("population"),
             "independent": info.get("independent"),
-            "status": info.get("status"),
             "un_member": info.get("unMember")
         }
 
@@ -150,8 +144,6 @@ def store_headlines():
             country_id INTEGER,
             country_code TEXT,
             title TEXT,
-            source TEXT,
-            publishedAt TEXT,
             url TEXT UNIQUE,
             FOREIGN KEY(country_id) REFERENCES country_ids(id)
         )
@@ -197,14 +189,12 @@ def store_headlines():
                 break
 
             cur.execute("""
-                INSERT OR IGNORE INTO headlines (country_id, country_code, title, source, publishedAt, url)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT OR IGNORE INTO headlines (country_id, country_code, title, url)
+                VALUES (?, ?, ?, ?)
             """, (
                 id,
                 country_code,
                 h["title"],
-                h["source"],
-                h["publishedAt"],
                 h["url"]
             ))
 
@@ -230,12 +220,8 @@ def store_country_data(all_data):
             country_id INTEGER,
             name TEXT PRIMARY KEY,
             official_name TEXT,
-            capital TEXT,
             region TEXT,
-            subregion TEXT,
-            population INTEGER,
             independent INTEGER,
-            status TEXT,
             un_member INTEGER, 
             FOREIGN KEY(country_id) REFERENCES country_ids(id)
         )
@@ -271,19 +257,15 @@ def store_country_data(all_data):
 
         cur.execute("""
             INSERT OR REPLACE INTO country_status
-            (country_id, name, official_name, capital, region, subregion, population,
-             independent, status, un_member)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (country_id, name, official_name, region,
+             independent, un_member)
+            VALUES (?, ?, ?, ?, ?, ?)
         """, (
             country_id, 
             country_name,
             info.get("official_name"),
-            info.get("capital"),
             info.get("region"),
-            info.get("subregion"),
-            info.get("population"),
             independent_val,
-            info.get("status"),
             un_member_val
         ))
 
